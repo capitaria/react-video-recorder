@@ -46,6 +46,10 @@
     "styled-components": "^4.1.1"
   },
   "dependencies": {
+    "jest": "26.4.2",
+    "jest-puppeteer": "4.4.0",
+    "lodash.merge": "^4.6.2",
+    "puppeteer": "1.20.0",
     "react-svg-inline": "^2.1.0",
     "ts-ebml": "^2.0.2"
   },
@@ -81,22 +85,22 @@
     "eslint-plugin-react": "^7.20.6",
     "eslint-plugin-standard": "^4.0.1",
     "husky": "^4.3.0",
-    "jest": "^26.4.2",
-    "jest-puppeteer": "^4.4.0",
     "lint-staged": "^10.4.0",
     "prettier": "^2.1.2",
     "prop-types": "^15.7.2",
-    "puppeteer": "^1.18.1",
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
     "semantic-release": "^17.2.3",
     "start-server-and-test": "^1.7.11",
     "styled-components": "4"
   },
-  "version": "0.0.0-development",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fbaiodias/react-video-recorder.git"
+    "url": "https://github.com/capitaria/react-video-recorder.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@capitaria"
+  }
 }

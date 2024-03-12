@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import merge from 'lodash.merge'
 import styled, { css } from 'styled-components'
 import { Decoder, tools, Reader } from 'ts-ebml'
 
@@ -247,14 +248,16 @@ export default class VideoRecorder extends Component {
           video: true
         }
 
-        const currentConstraints = {
-          ...this.props.constraints,
-          video: {
-            deviceId: {
-              exact: currentDeviceId
+        const currentConstraints = merge(
+          {
+            video: {
+              deviceId: {
+                exact: currentDeviceId
+              }
             }
-          }
-        }
+          },
+          this.props.constraints
+        )
 
         navigator.mediaDevices
           .getUserMedia(currentConstraints)
