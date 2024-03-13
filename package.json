@@ -101,6 +101,6 @@
   },
   "license": "MIT",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@capitaria"
+    "registry": "https://npm.pkg.github.com/"
   }
 }
