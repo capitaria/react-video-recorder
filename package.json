@@ -1,5 +1,5 @@
 {
-  "name": "react-video-recorder",
+  "name": "@capitaria/react-video-recorder",
   "main": "lib",
   "files": [
     "lib",
