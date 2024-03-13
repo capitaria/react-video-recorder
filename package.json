@@ -94,7 +94,7 @@
     "start-server-and-test": "^1.7.11",
     "styled-components": "4"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/capitaria/react-video-recorder.git"
