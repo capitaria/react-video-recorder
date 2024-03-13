@@ -49,7 +49,6 @@ jobs:
 
       - name: Semantic Release
         if: contains(github.ref, 'refs/heads/master')
-        uses: cycjimmy/semantic-release-action@v2
+        uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
