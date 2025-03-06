@@ -141,8 +141,8 @@ export default class VideoRecorder extends Component {
     isFlipped: true,
     countdownTime: 3000,
     constraints: CONSTRAINTS,
-    chunkSize: 250,
-    dataAvailableTimeout: 500
+    chunkSize: 100,
+    dataAvailableTimeout: 2000
   }
 
   videoInput = React.createRef()
@@ -208,6 +208,14 @@ export default class VideoRecorder extends Component {
   }
 
   componentWillUnmount () {
+    if (this.mediaRecorder) {
+      this.mediaRecorder.removeEventListener('stop', this.handleStop)
+      this.mediaRecorder.removeEventListener('error', this.handleError)
+      this.mediaRecorder.removeEventListener(
+        'dataavailable',
+        this.handleDataAvailable
+      )
+    }
     this.turnOffCamera()
     this.isComponentUnmounted = true
   }
@@ -223,8 +231,8 @@ export default class VideoRecorder extends Component {
         const videoDevices = mediaDevices.filter((x) => x.kind === 'videoinput')
         if (
           deviceId &&
-          videoDevices[0] &&
-          videoDevices.find((x) => x.deviceId) === undefined
+          videoDevices.length > 0 &&
+          !videoDevices.find((x) => x.deviceId === deviceId)
         ) {
           return this.handleError(
             new ReactVideoRecorderDeviceUnavailableError()
@@ -232,7 +240,9 @@ export default class VideoRecorder extends Component {
         }
 
         const currentDeviceId =
-          typeof deviceId === 'string' ? deviceId : videoDevices[0].deviceId
+          typeof deviceId === 'string'
+            ? deviceId
+            : videoDevices[0] && videoDevices[0].deviceId
 
         this.setState({
           isConnecting: true,
@@ -561,38 +571,54 @@ export default class VideoRecorder extends Component {
 
     clearTimeout(this.timeLimitTimeout)
 
-    const videoBlob =
-      this.recordedBlobs.length === 1
-        ? this.recordedBlobs[0]
-        : new window.Blob(this.recordedBlobs, {
-          type: this.getMimeType()
+    try {
+      const videoBlob =
+        this.recordedBlobs.length === 1
+          ? this.recordedBlobs[0]
+          : new window.Blob(this.recordedBlobs, {
+            type: this.getMimeType()
+          })
+
+      const thumbnailBlob = this.thumbnail
+      const startedAt = this.startedAt
+      const duration = endedAt - startedAt
+
+      // if this gets executed too soon, the last chunk of data is lost on FF
+      if (this.mediaRecorder) {
+        this.mediaRecorder.removeEventListener(
+          'dataavailable',
+          this.handleDataAvailable
+        )
+        this.mediaRecorder.removeEventListener('stop', this.handleStop)
+        this.mediaRecorder.removeEventListener('error', this.handleError)
+      }
+
+      this.fixVideoMetadata(videoBlob).then((fixedVideoBlob) => {
+        if (this.isComponentUnmounted) return
+
+        this.setState({
+          isRecording: false,
+          isReplayingVideo: true,
+          isReplayVideoMuted: true,
+          fixedVideoBlob,
+          videoUrl: window.URL.createObjectURL(fixedVideoBlob)
         })
 
-    const thumbnailBlob = this.thumbnail
-    const startedAt = this.startedAt
-    const duration = endedAt - startedAt
+        this.turnOffCamera()
 
-    // if this gets executed too soon, the last chunk of data is lost on FF
-    this.mediaRecorder.ondataavailable = null
-
-    this.fixVideoMetadata(videoBlob).then((fixedVideoBlob) => {
-      this.setState({
-        isRecording: false,
-        isReplayingVideo: true,
-        isReplayVideoMuted: true,
-        fixedVideoBlob,
-        videoUrl: window.URL.createObjectURL(fixedVideoBlob)
+        if (this.props.onRecordingComplete) {
+          this.props.onRecordingComplete(
+            fixedVideoBlob,
+            startedAt,
+            thumbnailBlob,
+            duration
+          )
+        }
       })
-
-      this.turnOffCamera()
-
-      this.props.onRecordingComplete(
-        fixedVideoBlob,
-        startedAt,
-        thumbnailBlob,
-        duration
-      )
-    })
+    } catch (error) {
+      console.error('Error in handleStop:', error)
+      this.handleError(error)
+    }
   }
 
   // see https://bugs.chromium.org/p/chromium/issues/detail?id=642012
