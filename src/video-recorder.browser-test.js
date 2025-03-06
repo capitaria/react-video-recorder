@@ -15,12 +15,35 @@ describe('VideoRecorder', () => {
     await page.waitForSelector('[data-qa="start-recording"]')
     await page.click('[data-qa="start-recording"]')
     await page.waitForSelector('[data-qa="stop-recording"]')
-    const DURATION = 1500
+    const DURATION = 2500
     await page.waitFor(DURATION)
     await page.click('[data-qa="stop-recording"]')
     await page.waitForSelector('video')
-    const duration = await page.$eval('video', (el) => el.duration)
 
+    // Esperar a que el video esté cargado y tenga una duración válida
+    await page.waitForFunction(
+      () => {
+        const video = document.querySelector('video')
+        console.log('Video status:', {
+          exists: !!video,
+          duration: video ? video.duration : 'no video',
+          readyState: video ? video.readyState : 'no video'
+        })
+        return video && !isNaN(video.duration) && video.duration > 0
+      },
+      { timeout: 5000 }
+    )
+
+    const duration = await page.$eval('video', (el) => {
+      console.log('Final video status:', {
+        duration: el.duration,
+        readyState: el.readyState,
+        currentTime: el.currentTime
+      })
+      return el.duration
+    })
+
+    console.log('Duration in test:', duration * 1000, 'ms')
     expect(duration * 1000).toBeWithinRange(DURATION - 100, DURATION + 100)
   })
 })
